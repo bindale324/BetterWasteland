@@ -4,12 +4,15 @@
     github link: https://github.com/bindale324
 ]]
 
-local o_list = require("ordered_list")
+local o_list = require("ordered_list");
+local libmodfunc = require("libmodfunc");
 
 local uiqueue = {};  -- maintain a fixed size queue, size = 2
 local in_bar = false;
 
 local foodAutoEatRecords = {}  -- maintain an array, we just record the food ID here.
+
+local GameMgr_GetT = xlua.get_generic_method(CS.GameMgr, "Get");
 
 local function operate_queue(uiname)
     table.insert(uiqueue, tostring(uiname));
@@ -19,7 +22,7 @@ local function operate_queue(uiname)
 end
 
 function OnOpenUI(uiname)
-    -- print("Open  ", tostring(uiname), " flag status: ", tostring(in_bar));
+    -- print("Open  ", tostring(uiname));
     operate_queue(uiname);
     if uiname == "NewMapUI" then
         if uiqueue[1] == "BarWindow" then
@@ -71,3 +74,31 @@ function OnCook(ingredients, result)
     o_list.print(foodAutoEatRecords);
     return false
 end
+
+-- ModFunc(CS.PeopleEvent, "PeopleEat",
+--     function (self, hero, item)
+--         if item ~= nil then     -- PeopleEat has another override.
+--             self:PeopleEat(hero, item);
+--         else
+--             self:PeopleEat(hero);
+--         end
+--     end);
+
+
+-- -- trade bug fix
+-- util.hotfix_ex(CS.TradeManager, "TradeAction", 
+--     function (self, TradeSellContent, TradeBuyContent, CurrentTraderID)
+--         self:TradeAction(TradeSellContent, TradeBuyContent, CurrentTraderID);
+--         print("TradeAction triggered");
+--         print(TradeSellContent);
+--         print(TradeBuyContent);
+--     end)
+
+local function register_modify_methods()
+    xlua.private_accessible(CS.BargainWindow);
+    for _, obj in ipairs(libmodfunc) do
+        ModFunc(obj.tModule, obj.funcName, obj.func);
+    end
+end
+
+register_modify_methods();
