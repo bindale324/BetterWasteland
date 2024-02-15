@@ -64,6 +64,22 @@ call stack:
 
 在DiscardGoods中，while循环的逻辑有问题，重写整个方法，重点关注while循环中的迭代逻辑。
 
+## 问题描述
+旅行者事件，选择了一个选项之后，再退出来的时候，什么都没有了，这显然是不合理的。
+
+坦克营地 - 【旅行者】 - 有很多选项
+
+
+## 解决方案
+
+在OnEvent（旅行者）的时候，就标记flag为true。
+在OnEvent（交易废品）的时候，如果前面的flag为true，那么flag2也为true，记录一下零钱的数量。
+在OnCloseUI（交易废品）的时候，如果前两个的flag都为true，**并且零钱没减少**，首先把前两个的都记为false，然后再启动事件【旅行者】
+
+在OnEvent（聊天）的时候，如果前面的flag为true，就标记flag2为true。记录一下时间。
+在OnCloseUI（聊天）的时候，如果前面两个flag窦唯true，并且时间**没减少**，把前两个记为false，然后再启动事件【旅行者】
+
+
 # Other Issue page
 
 + Frozen frames in dungeon

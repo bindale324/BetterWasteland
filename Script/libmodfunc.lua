@@ -112,11 +112,9 @@ local function Override_DiscardGoods(self, ID, Amount)
                 local l = 0;
                 while (l <= self.AllItems.sparesequips.Count - 1) do
                     if (self.AllItems.sparesequips[l].ID == ID + k * 100) then
-                        print("it is at " .. l);
                         -- sparesequips是装备格子，按照仓库的显示顺序来的
                         -- 刀片【专家】 刀片【传奇】虽然占两个格子，但是ID都是一样的
                         -- 在这里，我们加一个判断品质的就可以。
-                        print(self.AllItems.sparesequips[l].Name);
                         if (Amount > 0) then
                             if (self.AllItems.sparesequips[l].GoodsCout > Amount) then
                                 -- 如果够的话就直接减去。

@@ -6,6 +6,7 @@
 
 local o_list = require("ordered_list");
 local libmodfunc = require("libmodfunc");
+local libids = require("libids");
 
 local uiqueue = {};  -- maintain a fixed size queue, size = 2
 local in_bar = false;
@@ -13,6 +14,10 @@ local in_bar = false;
 local foodAutoEatRecords = {}  -- maintain an array, we just record the food ID here.
 
 local GameMgr_GetT = xlua.get_generic_method(CS.GameMgr, "Get");
+
+pocketMoney = 0;    -- global variable, the money of player.
+local traveller_event = false;
+local traveller2trade_event = false;
 
 local function operate_queue(uiname)
     table.insert(uiqueue, tostring(uiname));
@@ -33,7 +38,7 @@ function OnOpenUI(uiname)
 end
 
 function OnCloseUI(uiname)
-    -- print("Close  ", tostring(uiname), " flag status: ", tostring(in_bar));
+    -- print("Close  ", tostring(uiname));
     operate_queue(uiname);
     if uiname == "MissionWindow" then
         if in_bar then
@@ -42,6 +47,19 @@ function OnCloseUI(uiname)
         end
     elseif uiname == "BarWindow" then
         in_bar = false;
+    elseif uiname == "NewEventUI" then
+        if traveller_event and traveller2trade_event then
+            traveller_event = false;
+            traveller2trade_event = false;
+            
+            local money_good = GameMgr_GetT(CS.IItemManager)():GetGoods(libids.item_ids["money"]);
+            local money_changed = money_good.GoodsCout;
+            
+            if money_changed == pocketMoney then
+                print("we will go back to the upper layer");
+                EventManager:TryEvent(libids.event_ids["traveller"]);
+            end
+        end
     end
     return false;
 end
@@ -93,6 +111,24 @@ end
 --         print(TradeSellContent);
 --         print(TradeBuyContent);
 --     end)
+
+function OnEvent(templateID, force, param_list)
+    if templateID == libids.event_ids["traveller"] then
+        -- 【旅行者】事件
+        traveller_event = true;
+    elseif templateID == libids.event_ids["travellerTrade"] then
+        if traveller_event then
+            traveller2trade_event = true;
+            local money_good = GameMgr_GetT(CS.IItemManager)():GetGoods(libids.item_ids["money"]);
+            pocketMoney = money_good.GoodsCout;
+        else
+            traveller_event = false;
+            traveller2trade_event = false;
+        end
+    else
+        traveller_event = false;
+    end
+end
 
 local function register_modify_methods()
     xlua.private_accessible(CS.BargainWindow);
