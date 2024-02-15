@@ -14,6 +14,9 @@ local in_bar = false;
 local foodAutoEatRecords = {}  -- maintain an array, we just record the food ID here.
 
 local GameMgr_GetT = xlua.get_generic_method(CS.GameMgr, "Get");
+local FindObjectOfType_T = xlua.get_generic_method(CS.UnityEngine.Object, "FindObjectOfType");
+
+local UIManager = CS.QxFramework.Core.UIManager.Instance;
 
 pocketMoney = 0;    -- global variable, the money of player.
 local traveller_event = false;
@@ -26,13 +29,30 @@ local function operate_queue(uiname)
     end
 end
 
+local function DeactiveRedPoint()
+    local main_ui = FindObjectOfType_T(CS.MainUI)();
+    local _gos = main_ui._gos;
+
+    local people_num = PeopleManager:Getpeople().NowPeople.Count;
+    for i = 0, people_num - 1 do
+        local hero_var = _gos:get_Item("Hero (" .. tostring(i) .. ")");
+        local red_point = hero_var.transform:Find("Hero_1/RedPoint_1").gameObject;
+        red_point:SetActive(false);
+    end
+end
+
 function OnOpenUI(uiname)
     -- print("Open  ", tostring(uiname));
     operate_queue(uiname);
+    
     if uiname == "NewMapUI" then
         if uiqueue[1] == "BarWindow" then
             in_bar = true;
         end
+        -- elseif uiname == "CommandUI" then
+        --     DeactiveRedPoint();
+    else
+        DeactiveRedPoint();
     end
     return false;
 end
@@ -40,15 +60,17 @@ end
 function OnCloseUI(uiname)
     -- print("Close  ", tostring(uiname));
     operate_queue(uiname);
+    DeactiveRedPoint();
+
     if uiname == "MissionWindow" then
         if in_bar then
-            CS.QxFramework.Core.UIManager.Instance:Open("BarWindow");
+            UIManager:Open("BarWindow");
             in_bar = false;
         end
     elseif uiname == "BarWindow" then
         in_bar = false;
     elseif uiname == "NewEventUI" then
-        if traveller_event and traveller2trade_event then
+        if (traveller_event and traveller2trade_event) then
             traveller_event = false;
             traveller2trade_event = false;
             
@@ -93,24 +115,15 @@ function OnCook(ingredients, result)
     return false
 end
 
--- ModFunc(CS.PeopleEvent, "PeopleEat",
---     function (self, hero, item)
---         if item ~= nil then     -- PeopleEat has another override.
---             self:PeopleEat(hero, item);
---         else
---             self:PeopleEat(hero);
---         end
---     end);
+-- function OnDrinkWater(personal)
+--     local main_ui = FindObjectOfType_T(CS.MainUI)();
+--     main_ui:ActiveRedPoint();
+-- end
 
-
--- -- trade bug fix
--- util.hotfix_ex(CS.TradeManager, "TradeAction", 
---     function (self, TradeSellContent, TradeBuyContent, CurrentTraderID)
---         self:TradeAction(TradeSellContent, TradeBuyContent, CurrentTraderID);
---         print("TradeAction triggered");
---         print(TradeSellContent);
---         print(TradeBuyContent);
---     end)
+function OnInit()
+    xlua.private_accessible(CS.MainUI);
+    
+end
 
 function OnEvent(templateID, force, param_list)
     if templateID == libids.event_ids["traveller"] then
@@ -130,8 +143,12 @@ function OnEvent(templateID, force, param_list)
     end
 end
 
+--[[
+    ======================== REGISTER Lib Module Functions ========================
+]]
+
 local function register_modify_methods()
-    xlua.private_accessible(CS.BargainWindow);
+    xlua.private_accessible(CS.MainUI);
     for _, obj in ipairs(libmodfunc) do
         ModFunc(obj.tModule, obj.funcName, obj.func);
     end
