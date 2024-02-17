@@ -22,6 +22,8 @@ pocketMoney = 0;    -- global variable, the money of player.
 local traveller_event = false;
 local traveller2trade_event = false;
 
+local init_game_flag = true;
+
 local function operate_queue(uiname)
     table.insert(uiqueue, tostring(uiname));
     if #uiqueue > 2 then
@@ -38,6 +40,16 @@ local function DeactiveRedPoint()
         local hero_var = _gos:get_Item("Hero (" .. tostring(i) .. ")");
         local red_point = hero_var.transform:Find("Hero_1/RedPoint_1").gameObject;
         red_point:SetActive(false);
+    end
+end
+
+function Update()
+    if init_game_flag then
+        print(1);
+        init_game_flag = false;
+        for i = 0, 2 do
+            DeactiveRedPoint();
+        end
     end
 end
 
