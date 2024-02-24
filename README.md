@@ -96,6 +96,20 @@ call stack:
 + 想清楚、摸清楚`xlua.private_accessible()`
 + 要么重写方法，在更上一层hook进去，让他不要弹出原来的东西。
 
+
+## 问题描述
+
+Esc快捷键功能
+
+## 解决方案
+
+针对战斗界面：
+
++ UnderAttackUI
++ DialogWindowUI
+
+
+
 # Other Issue page
 
 + Frozen frames in dungeon

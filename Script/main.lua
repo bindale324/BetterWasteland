@@ -49,28 +49,29 @@ local function DeactiveRedPoint()
     end
 end
 
-local function invoke_mission_return()
-    local mission_window = FindObjectOfType_T(CS.MissionWindow)();
-    if (mission_window) then
-        local _gos = mission_window._gos;
+-- local function invoke_mission_return()
+--     local mission_window = FindObjectOfType_T(CS.MissionWindow)();
+--     if (mission_window) then
+--         local _gos = mission_window._gos;
     
-        if (_gos:ContainsKey("Locating")) then
-            local locating = _gos:get_Item("Locating");
-            local _return = _gos:get_Item("Return");
-            local flag = _gos:get_Item("flag");
-            local pivot = _gos:get_Item("Pivot");
-            local panel = _gos:get_Item("Panel");
-            locating:SetActive(false);
-            _return:SetActive(false);
-            flag:SetActive(false);
-            pivot:SetActive(true);
-            panel:SetActive(true);
-        end
-        TopLayerUI = "MissionWindow";
-    end
-end
+--         if (_gos:ContainsKey("Locating")) then
+--             local locating = _gos:get_Item("Locating");
+--             local _return = _gos:get_Item("Return");
+--             local flag = _gos:get_Item("flag");
+--             local pivot = _gos:get_Item("Pivot");
+--             local panel = _gos:get_Item("Panel");
+--             locating:SetActive(false);
+--             _return:SetActive(false);
+--             flag:SetActive(false);
+--             pivot:SetActive(true);
+--             panel:SetActive(true);
+--         end
+--         TopLayerUI = "MissionWindow";
+--     end
+-- end
 
 local close_bar_count = 0;
+local battle_scene = false;
 
 local function Keybind_Escape()
     if (Input.GetKeyDown(KeyCode.Escape)) then
@@ -80,6 +81,23 @@ local function Keybind_Escape()
         if (TopLayerUI ~= "Main_UI" and TopLayerUI ~= "ArchivementMainUI" and TopLayerUI ~= "CommandUI") then
             if (TopLayerUI == "NewMapUI" and in_bar) then
                 return;
+            end
+
+            if (TopLayerUI == "UnderAttackUI" or TopLayerUI == "FallBackUI" or TopLayerUI == "BattleWindow") then
+                print("you cannot close this UI.");
+                if (TopLayerUI == "BattleWindow") then
+                    battle_scene = false;
+                else
+                    battle_scene = true;
+                end
+                return;
+            end
+
+            if (TopLayerUI == "DialogWindowUI") then
+                if battle_scene then
+                    print("you cannot close this UI during battling");
+                    return;
+                end
             end
 
             if (close_bar_count ~= 0) then
@@ -103,18 +121,16 @@ function Update()
 end
 
 function OnOpenUI(uiname)
-    -- print("Open  ", tostring(uiname));
+    print("Open  ", tostring(uiname));
     operate_queue(uiname);
 
     uiStack:push_back(uiname);
-    -- uiStack:print_stack();
+    uiStack:print_stack();
 
     if uiname == "NewMapUI" then
         if uiqueue[1] == "BarWindow" then
             in_bar = true;
         end
-        -- elseif uiname == "CommandUI" then
-        --     DeactiveRedPoint();
     else
         DeactiveRedPoint();
     end
@@ -156,6 +172,8 @@ function OnCloseUI(uiname)
                 EventManager:TryEvent(libids.event_ids["traveller"]);
             end
         end
+    elseif uiname == "BattleWindow" then
+        battle_scene = false;
     end
     return false;
 end
@@ -190,16 +208,19 @@ function OnCook(ingredients, result)
 end
 
 function OnDrinkWater(personal)
-    local file = io.open("yourfile.txt", "w");
-    -- 检查文件是否成功打开
-    if file then
-        -- 写入一句话
-        file:write("Hello, this is a test sentence.\n")
+    -- call an object and instanciate it.
+    xlua.private_accessible(CS.PeopleManager);
+    local people_manager = CS.PeopleManager();
+    -- try public method
+    local people_data = people_manager:Getpeople();
+    local num = people_data.NowPeople.Count;
 
-        -- 关闭文件
-        file:close()
-    else
-        print("Error opening file for writing.")
+    -- try private method
+    people_manager:CheckNull();
+
+    for i = 0, num - 1 do
+        local res = people_manager:CanSell(i);
+        print(res);
     end
 end
 
