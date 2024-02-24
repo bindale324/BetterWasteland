@@ -7,6 +7,7 @@
 local o_list = require("ordered_list");
 local libmodfunc = require("libmodfunc");
 local libids = require("libids");
+local uiStack = require("ui_stack");
 
 local uiqueue = {};  -- maintain a fixed size queue, size = 2
 local in_bar = false;
@@ -23,6 +24,11 @@ local traveller_event = false;
 local traveller2trade_event = false;
 
 local init_game_flag = true;
+
+local TopLayerUI = "";
+local Input = CS.UnityEngine.Input;
+local KeyCode = CS.UnityEngine.KeyCode;
+local layer_0_ui = false;
 
 local function operate_queue(uiname)
     table.insert(uiqueue, tostring(uiname));
@@ -43,20 +49,66 @@ local function DeactiveRedPoint()
     end
 end
 
-function Update()
-    if init_game_flag then
-        print(1);
-        init_game_flag = false;
-        for i = 0, 2 do
-            DeactiveRedPoint();
+local function invoke_mission_return()
+    local mission_window = FindObjectOfType_T(CS.MissionWindow)();
+    if (mission_window) then
+        local _gos = mission_window._gos;
+    
+        if (_gos:ContainsKey("Locating")) then
+            local locating = _gos:get_Item("Locating");
+            local _return = _gos:get_Item("Return");
+            local flag = _gos:get_Item("flag");
+            local pivot = _gos:get_Item("Pivot");
+            local panel = _gos:get_Item("Panel");
+            locating:SetActive(false);
+            _return:SetActive(false);
+            flag:SetActive(false);
+            pivot:SetActive(true);
+            panel:SetActive(true);
+        end
+        TopLayerUI = "MissionWindow";
+    end
+end
+
+local close_bar_count = 0;
+
+local function Keybind_Escape()
+    if (Input.GetKeyDown(KeyCode.Escape)) then
+        -- print("I was triggered.");
+        TopLayerUI = uiStack:Top();
+        -- print("current top: " .. TopLayerUI);
+        if (TopLayerUI ~= "Main_UI" and TopLayerUI ~= "ArchivementMainUI" and TopLayerUI ~= "CommandUI") then
+            if (TopLayerUI == "NewMapUI" and in_bar) then
+                return;
+            end
+
+            if (close_bar_count ~= 0) then
+                close_bar_count = close_bar_count - 1;
+                return;
+            end
+            UIManager:Close(TopLayerUI);
+        else
+            print("you cannot close this UI.");
         end
     end
+end
+
+
+function Update()
+    if init_game_flag then
+        init_game_flag = false;
+        DeactiveRedPoint();
+    end
+    Keybind_Escape();
 end
 
 function OnOpenUI(uiname)
     -- print("Open  ", tostring(uiname));
     operate_queue(uiname);
-    
+
+    uiStack:push_back(uiname);
+    -- uiStack:print_stack();
+
     if uiname == "NewMapUI" then
         if uiqueue[1] == "BarWindow" then
             in_bar = true;
@@ -72,6 +124,15 @@ end
 function OnCloseUI(uiname)
     -- print("Close  ", tostring(uiname));
     operate_queue(uiname);
+    uiStack:remove(uiname);
+    -- uiStack:print_stack();
+
+    if (uiname == "DialogWindowUI") then
+        if (uiStack:find("BarWindow") ~= 0 or uiStack:find("MissionWindow") ~= 0) then
+            close_bar_count = 1;
+        end
+    end
+
     DeactiveRedPoint();
 
     if uiname == "MissionWindow" then
@@ -79,6 +140,7 @@ function OnCloseUI(uiname)
             UIManager:Open("BarWindow");
             in_bar = false;
         end
+        layer_0_ui = false;
     elseif uiname == "BarWindow" then
         in_bar = false;
     elseif uiname == "NewEventUI" then
@@ -127,10 +189,19 @@ function OnCook(ingredients, result)
     return false
 end
 
--- function OnDrinkWater(personal)
---     local main_ui = FindObjectOfType_T(CS.MainUI)();
---     main_ui:ActiveRedPoint();
--- end
+function OnDrinkWater(personal)
+    local file = io.open("yourfile.txt", "w");
+    -- 检查文件是否成功打开
+    if file then
+        -- 写入一句话
+        file:write("Hello, this is a test sentence.\n")
+
+        -- 关闭文件
+        file:close()
+    else
+        print("Error opening file for writing.")
+    end
+end
 
 function OnInit()
     xlua.private_accessible(CS.MainUI);
