@@ -73,6 +73,8 @@ end
 local close_bar_count = 0;
 local battle_scene = false;
 
+-- if there is any UI logic should avoid closing, goto `checkValidUI()` in ui_stack.lua
+
 local function Keybind_Escape()
     if (Input.GetKeyDown(KeyCode.Escape)) then
         -- print("I was triggered.");

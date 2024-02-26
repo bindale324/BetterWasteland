@@ -5,8 +5,9 @@ uiStack.ui_stack = {"Main_UI", "ArchivementMainUI", "CommandUI"};
 local function checkValidUI(uiname)
     if uiname == "Main_UI" or uiname == "ArchivementMainUI" or uiname == "CommandUI" then
         return false;
-    end
-    if uiname == "WaitTime" or uiname == "SplashScript" or uiname == "PlotUI2" then
+    elseif uiname == "WaitTime" or uiname == "SplashScript" or uiname == "PlotUI2" then
+        return false;
+    elseif uiname == "NewEventUI" then
         return false;
     end
     return true;
