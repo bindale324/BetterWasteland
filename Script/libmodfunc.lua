@@ -71,9 +71,9 @@ local TradeAction_obj = ModFuncOverride:new(CS.TradeManager, "TradeAction", Over
 
 local function Override_DiscardGoods(self, ID, Amount)
     if (self:GoodsIsObject(ID)) then
-        for k, item in ipairs(self.AllItems.items) do
-            if (ID == item.ID) then
-                item.GoodsCout = item.GoodsCout - Amount;
+        for i = 0, self.AllItems.items.Count - 1 do
+            if (ID == self.AllItems.items[i].ID) then
+                self.AllItems.items[i].GoodsCout = self.AllItems.items[i].GoodsCout - Amount;
             end
         end
     elseif (self:GoodsIsParts(ID)) then
@@ -136,15 +136,15 @@ local function Override_DiscardGoods(self, ID, Amount)
             end
         end
     elseif (self:GoodsIsSource(ID)) then
-        for k, source in self.AllItems.sources do
-            if (ID == source.ID) then
-                source.GoodsCout = source.GoodsCout - Amount;
+        for i = 0, self.AllItems.sources.Count - 1 do
+            if (ID == self.AllItems.sources[i].ID) then
+                self.AllItems.sources[i].GoodsCout = self.AllItems.sources[i].GoodsCout - Amount;
             end
         end
     elseif (self:GoodsIsFood(ID)) then
-        for k, food in self.AllItems.foods do
-            if (ID == food.ID) then
-                food.GoodsCout = food.GoodsCout - Amount;
+        for i = 0, self.AllItems.foods.Count - 1 do
+            if (ID == self.AllItems.foods[i].ID) then
+                self.AllItems.foods[i].GoodsCout = self.AllItems.foods[i].GoodsCout - Amount;
             end
         end
     end
