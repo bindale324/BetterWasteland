@@ -128,6 +128,11 @@ function OnOpenUI(uiname)
 
     uiStack:push_back(uiname);
     -- uiStack:print_stack();
+    if (uiname == "DialogWindowUI") then
+        if (uiStack:find("BarWindow") ~= 0 or uiStack:find("MissionWindow") ~= 0) then
+            close_bar_count = 1;
+        end
+    end
 
     if uiname == "NewMapUI" then
         if uiqueue[1] == "BarWindow" then
@@ -145,11 +150,6 @@ function OnCloseUI(uiname)
     uiStack:remove(uiname);
     -- uiStack:print_stack();
 
-    if (uiname == "DialogWindowUI") then
-        if (uiStack:find("BarWindow") ~= 0 or uiStack:find("MissionWindow") ~= 0) then
-            close_bar_count = 1;
-        end
-    end
 
     DeactiveRedPoint();
 
@@ -210,27 +210,7 @@ function OnCook(ingredients, result)
 end
 
 function OnDrinkWater(personal)
-    -- -- call an object and instanciate it.
-    -- xlua.private_accessible(CS.PeopleManager);
-    -- local people_manager = CS.PeopleManager();
-    -- -- try public method
-    -- local people_data = people_manager:Getpeople();
-    -- local num = people_data.NowPeople.Count;
-
-    -- -- try private method
-    -- people_manager:CheckNull();
-
-    -- for i = 0, num - 1 do
-    --     local res = people_manager:CanSell(i);
-    --     print(res);
-    -- end
-
-    -- local people_data = PeopleManager:Getpeople();
-    -- local now_people = people_data.NowPeople;   -- List data
-
-    -- for i = 0, now_people.Count - 1 do
-    --     print("index: " .. i .. tostring(now_people[i]))
-    -- end
+    local Item_manager = CS.ItemManager;
 end
 
 function OnInit()
