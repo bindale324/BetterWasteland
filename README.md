@@ -114,6 +114,25 @@ bug：
 + 送货问题
 
 
+## 问题描述
+
+酒馆的NPC，把他的东西买完了之后，他这辈子可能都不会刷新更多东西了。
+
+
+
+
+
+
+
+## 解决方案
+
+
+
+
+
+
+
+
 # Other Issue page
 
 + Frozen frames in dungeon

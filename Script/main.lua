@@ -102,6 +102,11 @@ local function Keybind_Escape()
                 end
             end
 
+            -- if (TopLayerUI == "BargainWindow") then
+            --     print("you cannot close this UI during bargaining");
+            --     return;
+            -- end
+
             if (close_bar_count ~= 0) then
                 close_bar_count = close_bar_count - 1;
                 return;
@@ -123,7 +128,7 @@ function Update()
 end
 
 function OnOpenUI(uiname)
-    -- print("Open  ", tostring(uiname));
+    print("Open  ", tostring(uiname));
     operate_queue(uiname);
 
     uiStack:push_back(uiname);

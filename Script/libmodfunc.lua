@@ -34,6 +34,10 @@ end
 
 local PeopleEat_obj = ModFuncOverride:new(CS.PeopleEvent, "PeopleEat", Override_PeopleEat);
 
+--- Summary: The function override for `TradeAction`, this is just a test override.
+---@param TradeSellContent Dictionay<int, int>
+---@param TradeBuyContent Dictionay<int, int>
+---@param CurrentTraderID integer
 local function Override_TradeAction(self, TradeSellContent, TradeBuyContent, CurrentTraderID)
     for k, v in pairs(TradeSellContent) do
         print("The item ID: " .. tostring(k));
@@ -69,6 +73,11 @@ local TradeAction_obj = ModFuncOverride:new(CS.TradeManager, "TradeAction", Over
 
 -- local Trade_obj = ModFuncOverride:new(CS.BargainWindow, "Trade", Override_Trade);
 
+
+--- Summary: The function override for `DiscardGoods`, we will change the iteration logic to avoid trading the legendary items.
+---@param ID integer
+---@param Amount integer
+---@return any
 local function Override_DiscardGoods(self, ID, Amount)
     if (self:GoodsIsObject(ID)) then
         for i = 0, self.AllItems.items.Count - 1 do
