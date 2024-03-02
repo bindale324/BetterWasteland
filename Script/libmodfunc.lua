@@ -344,6 +344,175 @@ end
 
 local BargainWindow_Update_obj = ModFuncOverride:new(CS.BargainWindow, "Update", Override_BargainWindow_Update);
 
+local function Override_PurchasePanel_Display(self, args)
+    self:OnDisplay(args);
+    local _gos = self._gos;
+
+    -- Inject input field for choosing amount
+    local InputField = CS.UnityEngine.UI.InputField;
+    local UnityGameObject = CS.UnityEngine.GameObject;
+    local AddComponentT = xlua.get_generic_method(CS.UnityEngine.GameObject, "AddComponent");   -- return type T
+    
+    -- 1. create InputAmount GameObject <- ChooseAmountPanel
+    local InputAnoumt = UnityGameObject("InputAmount");  -- instantiate a new GameObject
+    InputAnoumt.transform:SetParent(self.gameObject.transform:Find("Panel"));  -- set parent to the panel
+
+    -- add RectTransform component to the InputAmount GameObject
+    
+    local rectTransform = AddComponentT(CS.UnityEngine.RectTransform)(InputAnoumt);
+    rectTransform.anchorMin = CS.UnityEngine.Vector2(0, 0);
+    rectTransform.anchorMax = CS.UnityEngine.Vector2(1, 1);
+    rectTransform.pivot = CS.UnityEngine.Vector2(0.5, 0.5);
+
+    rectTransform.offsetMin = CS.UnityEngine.Vector2(400, 380);  -- Left, Bottom
+    rectTransform.offsetMax = CS.UnityEngine.Vector2(-400, -170);  -- -Right, -Top
+
+    rectTransform.localScale = CS.UnityEngine.Vector3(1, 1, 1);
+
+    local position = rectTransform.localPosition;
+    position.z = 0;
+    rectTransform.localPosition = position;
+
+    -- 2. create placeholder text GameObject <- InputAmount
+    local placeholder = UnityGameObject("place_holder");  -- instantiate a new GameObject
+    placeholder.transform:SetParent(self.gameObject.transform:Find("Panel/InputAmount"));  -- set parent to the InputAmount GameObject
+
+    -- 2.1 create rectTransform component <- placeholder
+    local rectTransform2 = AddComponentT(CS.UnityEngine.RectTransform)(placeholder);
+    rectTransform2.anchorMin = CS.UnityEngine.Vector2(0, 0);
+    rectTransform2.anchorMax = CS.UnityEngine.Vector2(1, 1);
+    rectTransform2.pivot = CS.UnityEngine.Vector2(0.5, 0.5);
+
+    rectTransform2.offsetMin = CS.UnityEngine.Vector2(0, 0);  -- Left, Bottom
+    rectTransform2.offsetMax = CS.UnityEngine.Vector2(0, 0);  -- -Right, -Top
+
+    rectTransform2.localScale = CS.UnityEngine.Vector3(1, 1, 1);
+
+    local position2 = rectTransform2.localPosition;
+    position2.z = 0;
+    rectTransform2.localPosition = position2;
+
+    -- 2.2 create Text component <- placeholder
+    local place_holder_text = AddComponentT(CS.UnityEngine.UI.Text)(placeholder);
+
+    place_holder_text.text = "请输入数字";
+    place_holder_text.font = CS.UnityEngine.Font.CreateDynamicFontFromOSFont("Arial", 28);
+    place_holder_text.fontSize = 28;
+    place_holder_text.supportRichText = false;
+    place_holder_text.alignment = CS.UnityEngine.TextAnchor.MiddleCenter;
+    place_holder_text.color = CS.UnityEngine.Color.black;
+
+    -- 3. create user_text text GameObject <- InputAmount
+    local user_text = UnityGameObject("user_text");  -- instantiate a new GameObject
+    user_text.transform:SetParent(self.gameObject.transform:Find("Panel/InputAmount"));  -- set parent to the InputAmount GameObject
+
+    -- 3.1 create rectTransform component <- user_text
+    local rectTransform3 = AddComponentT(CS.UnityEngine.RectTransform)(user_text);
+    rectTransform3.anchorMin = CS.UnityEngine.Vector2(0, 0);
+    rectTransform3.anchorMax = CS.UnityEngine.Vector2(1, 1);
+    rectTransform3.pivot = CS.UnityEngine.Vector2(0.5, 0.5);
+
+    rectTransform3.offsetMin = CS.UnityEngine.Vector2(0, 0);  -- Left, Bottom
+    rectTransform3.offsetMax = CS.UnityEngine.Vector2(0, 0);  -- -Right, -Top
+
+    rectTransform3.localScale = CS.UnityEngine.Vector3(1, 1, 1);
+
+    local position3 = rectTransform3.localPosition;
+    position3.z = 0;
+    rectTransform3.localPosition = position3;
+
+    -- 3.2 create Text component <- user_text
+    local user_text_text = AddComponentT(CS.UnityEngine.UI.Text)(user_text);
+
+    user_text_text.text = "";    -- set default text
+    user_text_text.font = CS.UnityEngine.Font.CreateDynamicFontFromOSFont("Arial", 32);
+    user_text_text.fontSize = 32;
+
+    user_text_text.supportRichText = false;
+    user_text_text.alignment = CS.UnityEngine.TextAnchor.MiddleCenter;
+    user_text_text.color = CS.UnityEngine.Color.black;
+
+    -- 4. Image component <- ChooseAmountPanel
+    local image = AddComponentT(CS.UnityEngine.UI.Image)(InputAnoumt);
+    image.color = CS.UnityEngine.Color.white;
+
+    local input_field = AddComponentT(InputField)(InputAnoumt);
+    input_field.textComponent = user_text_text;
+    input_field.contentType = InputField.ContentType.IntegerNumber;
+
+    input_field.placeholder = place_holder_text;
+
+    ---------- finish injecting input field ----------
+    local UIBase_GetT = xlua.get_generic_method(CS.PurchasePanel, "Get");
+
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Confrim").onClick:RemoveAllListeners();
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Confrim").onClick:AddListener(function()
+        InputAnoumt.transform:SetParent(nil);   -- remove the InputAmount GameObject
+        self:Confrim(0);
+    end);
+
+    
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Cancle").onClick:RemoveAllListeners();
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Cancle").onClick:AddListener(function()
+        InputAnoumt.transform:SetParent(nil);   -- remove the InputAmount GameObject
+        self:Cancel();
+    end);
+
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Bargin").onClick:RemoveAllListeners();
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Bargin").onClick:AddListener(function()
+        InputAnoumt.transform:SetParent(nil);   -- remove the InputAmount GameObject
+        local str_tmp = "";
+        self:Confrim(self:GetFinalSuccess(str_tmp));
+    end);
+end
+
+local PurchasePanel_Display_obj = ModFuncOverride:new(CS.PurchasePanel, "OnDisplay", Override_PurchasePanel_Display);
+
+local function Override_PurchasePanel_UpdatePanel(self)
+    -- CurrentCount, 就是Slider的值
+    -- local UIBase_GetT = xlua.get_generic_method(CS.PurchasePanel, "Get");
+    -- local GameMgr_GetT = xlua.get_generic_method(CS.GameMgr, "Get");
+    -- if self.CurrentCount < 1 then
+    --     UIBase_GetT(CS.UnityEngine.UI.Text)(self, "PriceSingle").text = "参考价：" + self.goods.Price;
+    --     UIBase_GetT(CS.UnityEngine.UI.Text)(self, "Price").text = "";
+    --     return;
+    -- end
+
+    -- UIBase_GetT(CS.UnityEngine.UI.Text)(self, "PriceSingle").text = "当前单价：" + self.SinglePiece:ToString("0.0") + "  |  参考价：" + self.goods.Price:ToString("0.0");
+    -- local price_storage = nil;
+    -- if self.isBuy then
+    --     price_storage = GameMgr_GetT(CS.IItemManager)():GetGoods(1006).GoodsCout;
+    -- else
+    --     price_storage = GameMgr_GetT(CS.IMarketManager)():GetMarket(GameMgr_GetT(CS.ICityManager)():GetCityID()).CityBank;
+    -- end
+    -- if self.Price > price_storage then
+    --     UIBase_GetT(CS.UnityEngine.UI.Text)(self, "Price").text = "数量: " + self.CurrentCount + "价格: <color=#FF4F4A>" + self.Price + "零件</color>";
+    -- else
+    --     UIBase_GetT(CS.UnityEngine.UI.Text)(self, "Price").text = "数量: " + self.CurrentCount + "价格: " + self.Price + "零件";
+    -- end
+    
+    -- first we need to get the user input
+    local text_obj = self.gameObject.transform:Find("Panel/InputAmount/user_text");
+
+    if text_obj ~= nil then
+        local user_input = GetComponentT(CS.UnityEngine.UI.Text)(text_obj).text;    -- string
+        if user_input ~= "" then
+            local input_num = tonumber(user_input);
+            if input_num ~= nil and input_num > 0 then
+                if input_num <= self.maxCount then
+                    self.slider.value = input_num / self.maxCount;
+                else
+                    self.slider.value = 1;
+                end
+            end
+        end
+    end
+
+    self:UpdatePannel();
+end
+
+local PurchasePanel_UpdatePanel_obj = ModFuncOverride:new(CS.PurchasePanel, "UpdatePannel", Override_PurchasePanel_UpdatePanel);
+
 --------------------------------------------------------------
 
 --[[
@@ -356,6 +525,8 @@ table.insert(libmodfunc, TradeAction_obj);
 table.insert(libmodfunc, DiscardGoods_obj);
 table.insert(libmodfunc, OpenChooseAmountPanel_obj);
 table.insert(libmodfunc, BargainWindow_Update_obj);
+table.insert(libmodfunc, PurchasePanel_Display_obj);
+table.insert(libmodfunc, PurchasePanel_UpdatePanel_obj);
 
 ---------------------------------------------------------------
 
