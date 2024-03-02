@@ -165,7 +165,7 @@ local DiscardGoods_obj = ModFuncOverride:new(CS.ItemManager, "DiscardGoods", Ove
 
 local GetComponentT = xlua.get_generic_method(CS.UnityEngine.Component, "GetComponent");
 local function Override_OpenChooseAmountPanel(self, IsSell, ID, TotalCount)
-    print("Success override!!");
+    -- print("Success override!!");
     local UIBase_GetT = xlua.get_generic_method(CS.BargainWindow, "Get");
     
     local IsSell2 = IsSell;

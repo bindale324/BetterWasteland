@@ -128,7 +128,7 @@ function Update()
 end
 
 function OnOpenUI(uiname)
-    print("Open  ", tostring(uiname));
+    -- print("Open  ", tostring(uiname));
     operate_queue(uiname);
 
     uiStack:push_back(uiname);
