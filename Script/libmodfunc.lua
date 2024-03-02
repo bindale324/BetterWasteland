@@ -163,6 +163,187 @@ end
 
 local DiscardGoods_obj = ModFuncOverride:new(CS.ItemManager, "DiscardGoods", Override_DiscardGoods);
 
+local GetComponentT = xlua.get_generic_method(CS.UnityEngine.Component, "GetComponent");
+local function Override_OpenChooseAmountPanel(self, IsSell, ID, TotalCount)
+    print("Success override!!");
+    local UIBase_GetT = xlua.get_generic_method(CS.BargainWindow, "Get");
+    
+    local IsSell2 = IsSell;
+    local ID2 = ID;
+    local TotalCount2 = TotalCount;
+
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Plus").onClick:RemoveAllListeners();
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Plus").onClick:AddListener(function()
+        self:ChangeCount(1);
+    end);
+
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "PlusMuch").onClick:RemoveAllListeners();
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "PlusMuch").onClick:AddListener(function()
+        self:ChangeCount(10);
+    end);
+
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Minus").onClick:RemoveAllListeners();
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "Minus").onClick:AddListener(function()
+        self:ChangeCount(-1);
+    end);
+
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "MinusMuch").onClick:RemoveAllListeners();
+    UIBase_GetT(CS.UnityEngine.UI.Button)(self, "MinusMuch").onClick:AddListener(function()
+        self:ChangeCount(-10);
+    end);
+
+    self._totalCount = TotalCount2;
+
+    local _gos = self._gos;
+    local choose_amount_game_object = _gos:get_Item("ChooseAmountPanel");   -- GameObject
+
+    choose_amount_game_object:SetActive(true);  -- make the panel visible
+
+    self.slider.value = 0;
+
+    ------------------ inject input field ------------------
+
+    local InputField = CS.UnityEngine.UI.InputField;
+    local UnityGameObject = CS.UnityEngine.GameObject;
+    local AddComponentT = xlua.get_generic_method(CS.UnityEngine.GameObject, "AddComponent");   -- return type T
+    
+    -- 1. create InputAmount GameObject <- ChooseAmountPanel
+    local InputAnoumt = UnityGameObject("InputAmount");  -- instantiate a new GameObject
+    InputAnoumt.transform:SetParent(choose_amount_game_object.transform:Find("Panel"));  -- set parent to the panel
+
+    -- add RectTransform component to the InputAmount GameObject
+    local rectTransform = AddComponentT(CS.UnityEngine.RectTransform)(InputAnoumt);
+    rectTransform.anchorMin = CS.UnityEngine.Vector2(0, 0);
+    rectTransform.anchorMax = CS.UnityEngine.Vector2(1, 1);
+    rectTransform.pivot = CS.UnityEngine.Vector2(0.5, 0.5);
+
+    rectTransform.offsetMin = CS.UnityEngine.Vector2(420, 325);  -- Left, Bottom
+    rectTransform.offsetMax = CS.UnityEngine.Vector2(-420, -105);  -- -Right, -Top
+
+    rectTransform.localScale = CS.UnityEngine.Vector3(1, 1, 1);
+
+    local position = rectTransform.localPosition;
+    position.z = 0;
+    rectTransform.localPosition = position;
+
+    -- 2. create placeholder text GameObject <- InputAmount
+    local placeholder = UnityGameObject("place_holder");  -- instantiate a new GameObject
+    placeholder.transform:SetParent(choose_amount_game_object.transform:Find("Panel/InputAmount"));  -- set parent to the InputAmount GameObject
+
+    -- 2.1 create rectTransform component <- placeholder
+    local rectTransform2 = AddComponentT(CS.UnityEngine.RectTransform)(placeholder);
+    rectTransform2.anchorMin = CS.UnityEngine.Vector2(0, 0);
+    rectTransform2.anchorMax = CS.UnityEngine.Vector2(1, 1);
+    rectTransform2.pivot = CS.UnityEngine.Vector2(0.5, 0.5);
+
+    rectTransform2.offsetMin = CS.UnityEngine.Vector2(-5, -15);  -- Left, Bottom
+    rectTransform2.offsetMax = CS.UnityEngine.Vector2(5, 15);  -- -Right, -Top
+
+    rectTransform2.localScale = CS.UnityEngine.Vector3(1, 1, 1);
+
+    local position2 = rectTransform2.localPosition;
+    position2.z = 0;
+    rectTransform2.localPosition = position2;
+
+    -- 2.2 create Text component <- placeholder
+    local place_holder_text = AddComponentT(CS.UnityEngine.UI.Text)(placeholder);
+
+    place_holder_text.text = "请输入数字";
+    place_holder_text.font = CS.UnityEngine.Font.CreateDynamicFontFromOSFont("Arial", 28);
+    place_holder_text.fontSize = 28;
+    place_holder_text.supportRichText = false;
+    place_holder_text.alignment = CS.UnityEngine.TextAnchor.MiddleCenter;
+    place_holder_text.color = CS.UnityEngine.Color.black;
+
+    -- 3. create user_text text GameObject <- InputAmount
+    local user_text = UnityGameObject("user_text");  -- instantiate a new GameObject
+    user_text.transform:SetParent(choose_amount_game_object.transform:Find("Panel/InputAmount"));  -- set parent to the InputAmount GameObject
+
+    -- 3.1 create rectTransform component <- user_text
+    local rectTransform3 = AddComponentT(CS.UnityEngine.RectTransform)(user_text);
+    rectTransform3.anchorMin = CS.UnityEngine.Vector2(0, 0);
+    rectTransform3.anchorMax = CS.UnityEngine.Vector2(1, 1);
+    rectTransform3.pivot = CS.UnityEngine.Vector2(0.5, 0.5);
+
+    rectTransform3.offsetMin = CS.UnityEngine.Vector2(-5, -15);  -- Left, Bottom
+    rectTransform3.offsetMax = CS.UnityEngine.Vector2(5, 15);  -- -Right, -Top
+
+    rectTransform3.localScale = CS.UnityEngine.Vector3(1, 1, 1);
+
+    local position3 = rectTransform3.localPosition;
+    position3.z = 0;
+    rectTransform3.localPosition = position3;
+
+    -- 3.2 create Text component <- user_text
+    local user_text_text = AddComponentT(CS.UnityEngine.UI.Text)(user_text);
+
+    user_text_text.text = "";
+    user_text_text.font = CS.UnityEngine.Font.CreateDynamicFontFromOSFont("Arial", 32);
+    user_text_text.fontSize = 32;
+
+    user_text_text.supportRichText = false;
+    user_text_text.alignment = CS.UnityEngine.TextAnchor.MiddleCenter;
+    user_text_text.color = CS.UnityEngine.Color.black;
+
+    -- 4. Image component <- ChooseAmountPanel
+    local image = AddComponentT(CS.UnityEngine.UI.Image)(InputAnoumt);
+    image.color = CS.UnityEngine.Color.white;
+
+    local input_field = AddComponentT(InputField)(InputAnoumt);
+    input_field.textComponent = user_text_text;
+    input_field.contentType = InputField.ContentType.IntegerNumber;
+
+    input_field.placeholder = place_holder_text;
+
+    ------------------ finish injecting input field ------------------
+
+    local transform = choose_amount_game_object.transform:Find("Panel/Confirm");
+    GetComponentT(CS.UnityEngine.UI.Button)(transform).onClick:RemoveAllListeners();
+    GetComponentT(CS.UnityEngine.UI.Button)(transform).onClick:AddListener(function()
+        if IsSell2 then
+            self:UpdateTrade(self.TradeSellContent, ID2, CS.UnityEngine.Mathf.RoundToInt(self.slider.value * TotalCount2));
+        else
+            self:UpdateTrade(self.TradeBuyContent, ID2, CS.UnityEngine.Mathf.RoundToInt(self.slider.value * TotalCount2));
+        end
+        self:SetChooseList(IsSell2);
+        InputAnoumt.transform:SetParent(nil);   -- remove the InputAmount GameObject
+        choose_amount_game_object:SetActive(false);
+    end);
+
+    local transform2 = choose_amount_game_object.transform:Find("Panel/Cancle");
+    GetComponentT(CS.UnityEngine.UI.Button)(transform2).onClick:RemoveAllListeners();
+    GetComponentT(CS.UnityEngine.UI.Button)(transform2).onClick:AddListener(function()
+        InputAnoumt.transform:SetParent(nil);   -- remove the InputAmount GameObject
+        choose_amount_game_object:SetActive(false);
+    end);
+
+end
+
+local OpenChooseAmountPanel_obj = ModFuncOverride:new(CS.BargainWindow, "OpenChooseAmountPanel", Override_OpenChooseAmountPanel);
+
+local function Override_BargainWindow_Update(self)
+    local _gos = self._gos;
+    local choose_amount_game_object = _gos:get_Item("ChooseAmountPanel");   -- GameObject
+    local text_obj = choose_amount_game_object.transform:Find("Panel/InputAmount/user_text");
+    if text_obj ~= nil then
+        local user_input = GetComponentT(CS.UnityEngine.UI.Text)(text_obj).text;    -- string
+        if user_input ~= "" then
+            local input_num = tonumber(user_input);
+            if input_num ~= nil and input_num > 0 then
+                if input_num <= self._totalCount then
+                    self.slider.value = input_num / self._totalCount;
+                else
+                    self.slider.value = 1;
+                end
+            end
+        end
+    end
+
+    self:Update();
+end
+
+local BargainWindow_Update_obj = ModFuncOverride:new(CS.BargainWindow, "Update", Override_BargainWindow_Update);
+
 --------------------------------------------------------------
 
 --[[
@@ -173,6 +354,8 @@ table.insert(libmodfunc, PeopleEat_obj);
 table.insert(libmodfunc, TradeAction_obj);
 -- table.insert(libmodfunc, Trade_obj);
 table.insert(libmodfunc, DiscardGoods_obj);
+table.insert(libmodfunc, OpenChooseAmountPanel_obj);
+table.insert(libmodfunc, BargainWindow_Update_obj);
 
 ---------------------------------------------------------------
 

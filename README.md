@@ -122,9 +122,27 @@ bug：
 
 
 
+## 解决方案
+
+
+
+## 问题描述
+
+添加一个输入框的功能
+
 
 
 ## 解决方案
+
+这个逻辑，首先是`SetChooseList()`函数，里面会打开一个`base._gos["ChooseAmountPanel"].SetActive(value: **true**);`
+
+这个才是最关键的，也是打开滑动栏的核心代码，也就是让他显性。
+
+需要注意的是，它并不是任何一个UI窗口，而是一个UI子模块，仅此而已。
+
+
+
+以道路维修的代码为案例
 
 
 
@@ -135,10 +153,9 @@ bug：
 
 # Other Issue page
 
-+ Frozen frames in dungeon
-+ Stuck in the middle of the road on situations
-+ trade issue
-+ 每次点开各种UI的时候都会卡，这个要探究一下原因
++ 增加数字输入框
++ 增加搜索框
++ 改变商店角色刷新逻辑
 
 
 
