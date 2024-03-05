@@ -5,7 +5,7 @@
 ]]
 
 local o_list = require("ordered_list");
-local libmodfunc = require("libmodfunc");
+local libmodfunc = require("override_summary");
 local libids = require("libids");
 local uiStack = require("ui_stack");
 
