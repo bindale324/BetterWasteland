@@ -180,6 +180,63 @@ end
 
 local BargainWindow_Update_obj = ModFuncOverride:new(CS.BargainWindow, "Update", Override_BargainWindow_Update);
 
+local function Override_BargainWindow_Display(self, args)
+    -- self:OnDisplay(args);
+    local int = CS.System.Int32;
+    self.CurrentTraderID = tonumber(args);
+    local Dict_int_int = CS.System.Collections.Generic.Dictionary(CS.System.Int32, CS.System.Int32);
+    self.TradeSellContent = Dict_int_int();
+	self.TradeBuyContent = Dict_int_int();
+
+    local first_time = true;
+
+    self:CollectObject();
+    self:SetChooseList(true);
+    self:SetChooseList(false);
+    
+    local _gos = self._gos;
+    local choose_amount_game_object = _gos:get_Item("ChooseAmountPanel");   -- GameObject
+    choose_amount_game_object:SetActive(false);  -- make the panel invisible
+
+    local image_trans = _gos:get_Item("Texts").transform:Find("Image");
+
+    local Load = xlua.get_generic_method(CS.QxFramework.Core.ResourceManager, "Load");
+    local GetT = xlua.get_generic_method(CS.GameMgr, "Get");
+    local image_id = GetT(CS.IPeopleManager)():GetPeopleByID(self.CurrentTraderID).ImageId;
+    GetComponentT(CS.UnityEngine.UI.Image)(image_trans).sprite = Load(CS.UnityEngine.Sprite)(
+        CS.QxFramework.Core.ResourceManager.Instance, "Pic/Hero/" .. image_id
+    );
+
+    local btn_trans = _gos:get_Item("Buttons").transform:Find("ButtonCancle");
+    GetComponentT(CS.UnityEngine.UI.Button)(btn_trans).onClick:RemoveAllListeners();
+    GetComponentT(CS.UnityEngine.UI.Button)(btn_trans).onClick:AddListener(function()
+        self:Close();
+    end);
+
+    local btn_trans2 = _gos:get_Item("Buttons").transform:Find("ButtonBuy");
+    GetComponentT(CS.UnityEngine.UI.Button)(btn_trans2).onClick:RemoveAllListeners();
+    GetComponentT(CS.UnityEngine.UI.Button)(btn_trans2).onClick:AddListener(function()
+        if first_time then
+            first_time = false;
+            local cnt = 0;
+            for k, v in pairs(self.TradeSellContent) do
+                cnt = cnt + 1;
+            end
+            if cnt == 0 then
+                CS.QxFramework.Core.UIManager.Instance:Open(
+                    "DialogWindowUI", 0, "", CS.DialogWindowUI.DialogWindowUIArg(
+                        "警告", "你没有选择任何商品，这可能会导致您的随机成员口才 -1 哦！", nil, "确定", function() end
+                    )
+                )
+            end
+        else
+            self:Trade(self.TradeSellContent, self.TradeBuyContent, self.CurrentTraderID);
+        end
+    end);
+end
+
+local BargainWindow_Display_obj = ModFuncOverride:new(CS.BargainWindow, "OnDisplay", Override_BargainWindow_Display);
+
 local function Override_PurchasePanel_Display(self, args)
     self:OnDisplay(args);
     local _gos = self._gos;
@@ -461,7 +518,8 @@ end
 
 local NewMapUI_OnOpenFilterPanel_obj = ModFuncOverride:new(CS.NewMapUI, "OnOpenFilterPanel", Override_OnOpenFilterPanel);
 
-UI_objs = {OpenChooseAmountPanel_obj, BargainWindow_Update_obj, PurchasePanel_Display_obj, PurchasePanel_UpdatePanel_obj,
+UI_objs = {OpenChooseAmountPanel_obj, BargainWindow_Update_obj, BargainWindow_Display_obj,
+           PurchasePanel_Display_obj, PurchasePanel_UpdatePanel_obj,
            NewMapUI_OnOpenFilterPanel_obj};
 
 return UI_objs;
