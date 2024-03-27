@@ -8,6 +8,7 @@ local o_list = require("ordered_list");
 local libmodfunc = require("override_summary");
 local libids = require("libids");
 local uiStack = require("ui_stack");
+local libhttp = require("libhttp");
 
 local uiqueue = {};  -- maintain a fixed size queue, size = 2
 local in_bar = false;
@@ -29,6 +30,7 @@ local TopLayerUI = "";
 local Input = CS.UnityEngine.Input;
 local KeyCode = CS.UnityEngine.KeyCode;
 local layer_0_ui = false;
+local next_window_check = false;
 
 local function operate_queue(uiname)
     table.insert(uiqueue, tostring(uiname));
@@ -124,6 +126,17 @@ function Update()
         init_game_flag = false;
         DeactiveRedPoint();
     end
+    if next_window_check then
+        next_window_check = false;
+        local money_good = GameMgr_GetT(CS.IItemManager)():GetGoods(libids.item_ids["money"]);
+        local money_changed = money_good.GoodsCout;
+        -- print("After trade, pocketMoney is: " .. money_changed);
+        
+        if money_changed == pocketMoney then
+            print("we will go back to the upper layer");
+            EventManager:TryEvent(libids.event_ids["traveller"]);
+        end
+    end
     Keybind_Escape();
 end
 
@@ -170,14 +183,8 @@ function OnCloseUI(uiname)
         if (traveller_event and traveller2trade_event) then
             traveller_event = false;
             traveller2trade_event = false;
-            
-            local money_good = GameMgr_GetT(CS.IItemManager)():GetGoods(libids.item_ids["money"]);
-            local money_changed = money_good.GoodsCout;
-            
-            if money_changed == pocketMoney then
-                print("we will go back to the upper layer");
-                EventManager:TryEvent(libids.event_ids["traveller"]);
-            end
+
+            next_window_check = true;
         end
     elseif uiname == "BattleWindow" then
         battle_scene = false;
@@ -214,9 +221,9 @@ function OnCook(ingredients, result)
     return false
 end
 
-function OnDrinkWater(personal)
-    local Item_manager = CS.ItemManager;
-end
+-- function OnDrinkWater(personal)
+--     libhttp.Get("www.baidu.com");
+-- end
 
 function OnInit()
     xlua.private_accessible(CS.MainUI);
@@ -232,6 +239,11 @@ function OnEvent(templateID, force, param_list)
             traveller2trade_event = true;
             local money_good = GameMgr_GetT(CS.IItemManager)():GetGoods(libids.item_ids["money"]);
             pocketMoney = money_good.GoodsCout;
+            print("Before trade, pocketMoney is: " .. pocketMoney);
+
+            for i = 0, param_list.Count - 1 do
+                print(param_list[i]);
+            end
         else
             traveller_event = false;
             traveller2trade_event = false;

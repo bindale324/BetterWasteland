@@ -79,6 +79,7 @@ call stack:
 在OnEvent（聊天）的时候，如果前面的flag为true，就标记flag2为true。记录一下时间。
 在OnCloseUI（聊天）的时候，如果前面两个flag窦唯true，并且时间**没减少**，把前两个记为false，然后再启动事件【旅行者】
 
+这个方案有一个问题就是，先关闭NewEventUI，再计算交易金额，再弹出来对话框。所以现在算了是没有效果的
 
 ## 问题描述
 
